@@ -1,0 +1,663 @@
+:root {
+  --bg: #faf7f1;
+  --bg-raised: #ffffff;
+  --ink: #221d15;
+  --ink-soft: #6e6552;
+  --ink-faint: #a39878;
+  --border: #e7e0d0;
+  --border-strong: #d8cfb8;
+  --accent: #b6481e;
+  --accent-hover: #983b18;
+  --accent-ink: #fdf5ec;
+  --accent-soft: rgba(182, 72, 30, 0.08);
+  --accent-soft-strong: rgba(182, 72, 30, 0.16);
+  --code-bg: #f1ebdd;
+  --danger: #ae2f1f;
+  --shadow: 0 1px 2px rgba(34, 29, 21, 0.04), 0 8px 24px rgba(34, 29, 21, 0.06);
+
+  --font-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-sans:
+    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+
+  font: 16px/1.6 var(--font-sans);
+  color-scheme: light dark;
+  color: var(--ink);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16130e;
+    --bg-raised: #1e1a13;
+    --ink: #f4eee0;
+    --ink-soft: #b6ab90;
+    --ink-faint: #7d7358;
+    --border: #332c1f;
+    --border-strong: #453b28;
+    --accent: #e79362;
+    --accent-hover: #efac82;
+    --accent-ink: #1c1209;
+    --accent-soft: rgba(231, 147, 98, 0.12);
+    --accent-soft-strong: rgba(231, 147, 98, 0.2);
+    --code-bg: #221c13;
+    --danger: #e2705c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--accent);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+
+h1 {
+  font-size: 2.75rem;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.4rem;
+  line-height: 1.25;
+}
+
+p {
+  margin: 0;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--code-bg);
+}
+
+/* --- Site chrome --- */
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 32px;
+}
+
+.site-header__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.site-header__wordmark {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-header__wordmark em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 0.92rem;
+}
+
+.site-header__nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.site-header__nav a:hover {
+  color: var(--ink);
+}
+
+.site-header__user {
+  color: var(--ink-faint);
+}
+
+main {
+  flex: 1;
+}
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  color: var(--ink-faint);
+  font-size: 0.95rem;
+}
+
+/* --- Buttons & form controls, shared --- */
+
+.btn {
+  display: inline-block;
+  font: inherit;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.btn-quiet {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--ink-soft);
+}
+
+.btn-quiet:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.field input {
+  font: inherit;
+  font-size: 0.98rem;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-raised);
+  color: var(--ink);
+}
+
+.field input:focus {
+  outline: 2px solid var(--accent-soft-strong);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.88rem;
+}
+
+/* --- Auth pages --- */
+
+.auth-page {
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 96px 24px 64px;
+}
+
+.auth-page .kicker {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.auth-page h1 {
+  font-size: 2rem;
+  margin-bottom: 32px;
+}
+
+.auth-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-page .btn-primary {
+  margin-top: 4px;
+}
+
+.auth-page .switch-link {
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+}
+
+/* --- Home / dashboard --- */
+
+.home-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 24px;
+}
+
+.home-page .kicker {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.home-page h1 {
+  margin-bottom: 32px;
+}
+
+.home-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* --- Courses --- */
+
+.courses-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+.courses-page .kicker {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.courses-page h1 {
+  margin-bottom: 40px;
+}
+
+.course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.course-card {
+  display: block;
+  background: var(--bg-raised);
+  padding: 24px 28px;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 120ms ease;
+}
+
+.course-card:hover {
+  background: var(--accent-soft);
+}
+
+.course-card h2 {
+  margin-bottom: 8px;
+}
+
+.course-card p {
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+/* --- Course detail --- */
+
+.course-detail-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+.course-detail-page .kicker {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.course-detail-page__description {
+  color: var(--ink-soft);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  margin: 16px 0 48px;
+  max-width: 56ch;
+}
+
+.module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.module-block h2 {
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lesson-list li {
+  border-bottom: 1px solid var(--border);
+}
+
+.lesson-list li:last-child {
+  border-bottom: none;
+}
+
+.lesson-list a {
+  display: block;
+  padding: 14px 4px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.98rem;
+  transition: color 120ms ease;
+}
+
+.lesson-list a:hover {
+  color: var(--accent);
+}
+
+/* --- Lesson viewer --- */
+
+.lesson-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+}
+
+.back-link {
+  display: inline-block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 32px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+.prose {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.prose h1 {
+  font-size: 2.1rem;
+  margin-bottom: 24px;
+}
+
+.prose p {
+  margin-bottom: 20px;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 20px;
+  padding-left: 1.4em;
+}
+
+.prose li {
+  margin-bottom: 8px;
+}
+
+.prose blockquote {
+  margin: 0 0 20px;
+  padding: 4px 20px;
+  border-left: 3px solid var(--accent);
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.prose pre {
+  background: var(--code-bg);
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0 0 20px;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+}
+
+.mermaid-diagram {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 20px;
+  overflow-x: auto;
+}
+
+.mermaid-diagram svg {
+  max-width: 100%;
+}
+
+.lesson-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* --- Chat --- */
+
+.chat-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-page .kicker {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.chat-page h1 {
+  margin-bottom: 8px;
+}
+
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 320px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px 4px;
+}
+
+.chat-message {
+  max-width: 75%;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.chat-message--user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-bottom-right-radius: 4px;
+}
+
+.chat-message--assistant {
+  align-self: flex-start;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+  /* Assistant content renders through react-markdown, which already
+     produces block elements (p, ul, pre, ...) with their own spacing —
+     the pre-wrap inherited from .chat-message is only needed for the
+     user's plain, single-line, non-markdown text. */
+  white-space: normal;
+}
+
+.chat-message--loading {
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+.chat-markdown > *:first-child {
+  margin-top: 0;
+}
+
+.chat-markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown p {
+  margin: 0 0 10px;
+}
+
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3 {
+  font-size: 1.02rem;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin: 0 0 10px;
+  padding-left: 1.3em;
+}
+
+.chat-markdown li {
+  margin-bottom: 4px;
+}
+
+.chat-markdown li:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown blockquote {
+  margin: 0 0 10px;
+  padding: 2px 14px;
+  border-left: 3px solid var(--accent);
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.chat-markdown pre {
+  background: var(--code-bg);
+  padding: 12px 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0 0 10px;
+}
+
+.chat-markdown pre code {
+  background: none;
+  padding: 0;
+}
+
+.chat-input {
+  display: flex;
+  gap: 12px;
+}
+
+.chat-input input {
+  flex: 1;
+  font: inherit;
+  font-size: 0.98rem;
+  padding: 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-raised);
+  color: var(--ink);
+}
+
+.chat-input input:focus {
+  outline: 2px solid var(--accent-soft-strong);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.chat-input input:disabled {
+  opacity: 0.6;
+}

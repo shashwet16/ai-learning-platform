@@ -1,0 +1,17 @@
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+extend-exclude = "alembic/versions"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's Depends()/Query()/etc are designed to be called in argument
+# defaults — that's the dependency-injection mechanism, not a bug.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]

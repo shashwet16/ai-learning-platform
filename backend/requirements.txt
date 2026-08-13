@@ -1,0 +1,14 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic-settings==2.7.1
+sqlalchemy==2.0.36
+psycopg[binary]==3.2.10
+alembic==1.18.5
+# passlib's bcrypt backend detection is broken against bcrypt>=4.1 (passlib
+# 1.7.4 is unmaintained since 2020, predates that bcrypt API change) —
+# bcrypt is pinned below to the last version passlib actually works with.
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+pyjwt==2.13.0
+email-validator==2.2.0
+mistralai==2.7.2

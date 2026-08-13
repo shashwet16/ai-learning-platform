@@ -1,0 +1,34 @@
+# --- Secrets ---
+.env
+.env.local
+*.env
+.env.*
+!.env.example
+
+# --- Python (backend) ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# --- Node / JavaScript (frontend) ---
+node_modules/
+dist/
+build/
+npm-debug.log*
+
+# --- Kept local-only, not published to the GitHub remote ---
+ROADMAP.md
+
+# --- Editor / OS junk ---
+.DS_Store
+.idea/
+*.swp
+
+# --- Claude Code local settings (machine-specific, not shared) ---
+.claude/settings.local.json
