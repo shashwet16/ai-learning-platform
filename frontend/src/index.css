@@ -499,6 +499,58 @@ main {
   max-width: 100%;
 }
 
+.code-playground,
+.code-playground-loading {
+  margin: 0 0 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.code-playground-loading {
+  height: 120px;
+  background: var(--code-bg);
+}
+
+.code-playground .cm-editor {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+}
+
+.code-playground .cm-scroller {
+  overflow-x: auto;
+}
+
+.code-playground__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: var(--code-bg);
+  border-top: 1px solid var(--border-strong);
+}
+
+.code-playground__hint {
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
+.code-playground__output {
+  margin: 0;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-strong);
+  background: var(--bg-raised);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.code-playground__output--error {
+  color: var(--danger);
+}
+
 .lesson-nav {
   display: flex;
   align-items: center;
