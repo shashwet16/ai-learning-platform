@@ -7,6 +7,7 @@ import { CourseDetailPage } from './pages/CourseDetailPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { LessonPage } from './pages/LessonPage'
 import { LoginPage } from './pages/LoginPage'
+import { PracticePage } from './pages/PracticePage'
 import { RegisterPage } from './pages/RegisterPage'
 
 function HomePage() {
@@ -50,6 +51,7 @@ function App() {
               <Route path="/courses" element={<CoursesPage />} />
               <Route path="/courses/:courseId" element={<CourseDetailPage />} />
               <Route path="/lessons/:lessonId" element={<LessonPage />} />
+              <Route path="/practice" element={<PracticePage />} />
               <Route path="/chat" element={<ChatPage />} />
             </Route>
           </Route>

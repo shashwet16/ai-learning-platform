@@ -12,6 +12,7 @@ export function SiteHeader() {
         </Link>
         <nav className="site-header__nav">
           <Link to="/courses">Courses</Link>
+          <Link to="/practice">Practice</Link>
           <Link to="/chat">Chat</Link>
           {user && <span className="site-header__user">{user.email}</span>}
           <button type="button" className="btn btn-quiet" onClick={logout}>

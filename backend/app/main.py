@@ -10,6 +10,7 @@ from app.api.routes.auth import router as auth_router
 from app.api.routes.chat import router as chat_router
 from app.api.routes.courses import lessons_router
 from app.api.routes.courses import router as courses_router
+from app.api.routes.exercises import router as exercises_router
 from app.core.config import settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -37,6 +38,7 @@ app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(courses_router)
 app.include_router(lessons_router)
+app.include_router(exercises_router)
 
 
 @app.middleware("http")

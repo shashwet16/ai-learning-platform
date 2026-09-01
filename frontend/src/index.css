@@ -13,6 +13,7 @@
   --accent-soft-strong: rgba(182, 72, 30, 0.16);
   --code-bg: #f1ebdd;
   --danger: #ae2f1f;
+  --danger-soft: rgba(174, 47, 31, 0.1);
   --shadow: 0 1px 2px rgba(34, 29, 21, 0.04), 0 8px 24px rgba(34, 29, 21, 0.06);
 
   --font-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
@@ -46,6 +47,7 @@
     --accent-soft-strong: rgba(231, 147, 98, 0.2);
     --code-bg: #221c13;
     --danger: #e2705c;
+    --danger-soft: rgba(226, 112, 92, 0.16);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 }
@@ -354,6 +356,81 @@ main {
   line-height: 1.55;
 }
 
+/* --- Practice catalog --- */
+
+.practice-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+.practice-page .kicker {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.practice-page h1 {
+  margin-bottom: 40px;
+}
+
+.practice-page__empty {
+  color: var(--ink-soft);
+}
+
+.practice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.practice-row {
+  display: grid;
+  grid-template-columns: 130px 1fr auto;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-raised);
+  padding: 16px 24px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 120ms ease;
+}
+
+.practice-row:hover {
+  background: var(--accent-soft);
+}
+
+.practice-row__unsolved {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  padding: 3px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.practice-row__prompt {
+  font-size: 0.96rem;
+  color: var(--ink);
+}
+
+.practice-row__lesson {
+  font-size: 0.86rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
 /* --- Course detail --- */
 
 .course-detail-page {
@@ -548,6 +625,50 @@ main {
 }
 
 .code-playground__output--error {
+  color: var(--danger);
+}
+
+.exercise-playground {
+  margin: 0 0 20px;
+}
+
+.exercise-playground__prompt {
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  background: var(--accent-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+
+.exercise-playground__kicker {
+  display: block;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.exercise-playground__prompt p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+
+.exercise-status {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.exercise-status--passed {
+  background: var(--accent-soft-strong);
+  color: var(--accent-hover);
+}
+
+.exercise-status--failed {
+  background: var(--danger-soft);
   color: var(--danger);
 }
 

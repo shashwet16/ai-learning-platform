@@ -3,6 +3,7 @@ import Markdown, { type Components } from 'react-markdown'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { getLesson, type LessonDetail } from '../api/courses'
+import { getExerciseForLesson, type ExerciseRead } from '../api/exercises'
 import { MermaidDiagram } from '../components/MermaidDiagram'
 
 // Lazy, not a static import: CodePlayground pulls in CodeMirror + the
@@ -15,6 +16,16 @@ import { MermaidDiagram } from '../components/MermaidDiagram'
 const CodePlayground = lazy(() =>
   import('../components/CodePlayground').then((m) => ({
     default: m.CodePlayground,
+  })),
+)
+
+// Same reasoning, same fix — ExercisePlayground also pulls in CodeMirror.
+// Rendering it is gated on `exercise` actually resolving to a real row
+// (see the fetch below), so lessons with no attached exercise never even
+// mount this lazy boundary, let alone fetch CodeMirror's chunk.
+const ExercisePlayground = lazy(() =>
+  import('../components/ExercisePlayground').then((m) => ({
+    default: m.ExercisePlayground,
   })),
 )
 
@@ -47,6 +58,7 @@ export function LessonPage() {
   const navigate = useNavigate()
   const [lesson, setLesson] = useState<LessonDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [exercise, setExercise] = useState<ExerciseRead | null>(null)
 
   useEffect(() => {
     if (!lessonId) return
@@ -62,6 +74,19 @@ export function LessonPage() {
           err instanceof ApiError ? err.message : 'Failed to load lesson.',
         )
       })
+  }, [lessonId])
+
+  useEffect(() => {
+    if (!lessonId) return
+    // Independent of the lesson-content fetch above, and deliberately
+    // silent on failure: most lessons have no attached exercise at all,
+    // and a 404 here (exercise_not_found) is the expected, common case —
+    // not an error worth surfacing. Any other failure degrades the same
+    // way, since this is a supplementary feature, not core lesson content.
+    setExercise(null)
+    getExerciseForLesson(lessonId)
+      .then(setExercise)
+      .catch(() => undefined)
   }, [lessonId])
 
   if (error) {
@@ -81,6 +106,12 @@ export function LessonPage() {
       <article className="prose">
         <Markdown components={markdownComponents}>{lesson.body}</Markdown>
       </article>
+
+      {exercise && (
+        <Suspense fallback={<div className="code-playground-loading" />}>
+          <ExercisePlayground exercise={exercise} />
+        </Suspense>
+      )}
 
       <nav className="lesson-nav">
         {lesson.prev_lesson_id ? (
