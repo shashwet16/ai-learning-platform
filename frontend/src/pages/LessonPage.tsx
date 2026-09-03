@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { getLesson, type LessonDetail } from '../api/courses'
 import { getExerciseForLesson, type ExerciseRead } from '../api/exercises'
+import { getQuizForLesson } from '../api/quiz'
 import { MermaidDiagram } from '../components/MermaidDiagram'
 
 // Lazy, not a static import: CodePlayground pulls in CodeMirror + the
@@ -59,6 +60,7 @@ export function LessonPage() {
   const [lesson, setLesson] = useState<LessonDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [exercise, setExercise] = useState<ExerciseRead | null>(null)
+  const [hasQuiz, setHasQuiz] = useState(false)
 
   useEffect(() => {
     if (!lessonId) return
@@ -89,6 +91,18 @@ export function LessonPage() {
       .catch(() => undefined)
   }, [lessonId])
 
+  useEffect(() => {
+    if (!lessonId) return
+    // Same "most lessons have neither" reasoning as the exercise fetch
+    // above — a 404 (quiz_not_found) is the expected common case, not an
+    // error. Only the existence matters here; QuizPage does its own fetch
+    // of the full quiz once the learner actually navigates to it.
+    setHasQuiz(false)
+    getQuizForLesson(lessonId)
+      .then(() => setHasQuiz(true))
+      .catch(() => undefined)
+  }, [lessonId])
+
   if (error) {
     return <p className="form-error">{error}</p>
   }
@@ -111,6 +125,15 @@ export function LessonPage() {
         <Suspense fallback={<div className="code-playground-loading" />}>
           <ExercisePlayground exercise={exercise} />
         </Suspense>
+      )}
+
+      {hasQuiz && (
+        <Link
+          to={`/lessons/${lessonId}/quiz`}
+          className="btn btn-quiet lesson-quiz-link"
+        >
+          Take the quiz →
+        </Link>
       )}
 
       <nav className="lesson-nav">
