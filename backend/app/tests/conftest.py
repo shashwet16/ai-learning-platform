@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.security import create_access_token, hash_password
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app as fastapi_app
@@ -13,7 +14,7 @@ from app.main import app as fastapi_app
 # Imported for the side effect of registering every mapper on Base.metadata
 # before create_all runs — importing only the models a given test file uses
 # would leave the rest of the schema (and their FK targets) uncreated.
-from app.models import Course, Lesson, Module  # noqa: F401
+from app.models import Course, Lesson, Module, User  # noqa: F401
 
 
 @pytest.fixture
@@ -74,3 +75,26 @@ def lesson(db: Session) -> Lesson:
     db.add(lesson)
     db.commit()
     return lesson
+
+
+@pytest.fixture
+def user(db: Session) -> User:
+    """A committed User — real password hashing, so this is a genuine row,
+    not a bare-minimum stub."""
+    user = User(
+        email="learner@example.com",
+        hashed_password=hash_password("correct horse battery staple"),
+        full_name="Test Learner",
+    )
+    db.add(user)
+    db.commit()
+    return user
+
+
+@pytest.fixture
+def auth_headers(user: User) -> dict[str, str]:
+    """Authorization header for `user`, via a real signed JWT — not a
+    dependency override, so a test using this fixture also exercises the
+    actual decode_access_token path get_current_user relies on."""
+    token = create_access_token(str(user.id))
+    return {"Authorization": f"Bearer {token}"}

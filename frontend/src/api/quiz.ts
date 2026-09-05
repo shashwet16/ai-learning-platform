@@ -33,6 +33,9 @@ export interface QuestionResult {
   // null = not graded (unanswered), true/false = graded.
   correct: boolean | null
   feedback: string | null
+  // mcq only, null for open_ended — the correct choice, revealed only
+  // here (post-submission), never by getQuizForLesson above.
+  correct_choice_id: string | null
 }
 
 export interface QuizSubmitResponse {

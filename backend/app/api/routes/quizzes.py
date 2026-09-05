@@ -4,9 +4,12 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.api.deps import get_current_user
 from app.core.errors import AppError
 from app.db.session import get_db
+from app.models.progress import QuizAttempt
 from app.models.quiz import Question, Quiz
+from app.models.user import User
 from app.schemas.quiz import (
     QuestionResult,
     QuizRead,
@@ -42,12 +45,19 @@ def get_quiz_for_lesson(lesson_id: uuid.UUID, db: Session = Depends(get_db)) -> 
 
 @router.post("/quizzes/{quiz_id}/submit", response_model=QuizSubmitResponse)
 def submit_quiz(
-    quiz_id: uuid.UUID, body: QuizSubmitRequest, db: Session = Depends(get_db)
+    quiz_id: uuid.UUID,
+    body: QuizSubmitRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> QuizSubmitResponse:
-    # Public and stateless, same as the fetch endpoint above — unlike
-    # exercise submissions (M3.10), nothing here is persisted or scoped to
-    # a user; the roadmap's M5.1 models don't include a QuizSubmission
-    # table, so grading is pure computation over what the client just sent.
+    # Revises M5.4/M5.5's original design: this endpoint was deliberately
+    # public and stateless (no QuizSubmission table existed in M5.1's
+    # models) because nothing yet needed to know *whose* attempt this was.
+    # M6.2 does — progress tracking requires a QuizAttempt row scoped to a
+    # user — so grading itself is still pure computation over the request
+    # body, but the endpoint is now authenticated and persists one log row
+    # per submission (see QuizAttempt's own comment for why it's a log,
+    # not a unique-per-user row like LessonProgress).
     quiz = db.scalars(
         select(Quiz).where(Quiz.id == quiz_id).options(_WITH_QUESTIONS)
     ).one_or_none()
@@ -66,11 +76,12 @@ def submit_quiz(
         answer = answers_by_question.get(question.id)
 
         if question.question_type == "mcq":
+            # Looked up unconditionally, not just when there's an answer to
+            # check — the result needs to reveal it either way (see
+            # QuestionResult.correct_choice_id's own comment).
+            correct_choice = next((c for c in question.choices if c.is_correct), None)
             correct: bool | None = None
             if answer is not None and answer.choice_id is not None:
-                correct_choice = next(
-                    (c for c in question.choices if c.is_correct), None
-                )
                 correct = (
                     correct_choice is not None and answer.choice_id == correct_choice.id
                 )
@@ -79,6 +90,7 @@ def submit_quiz(
                     question_id=question.id,
                     question_type=question.question_type,
                     correct=correct,
+                    correct_choice_id=correct_choice.id if correct_choice else None,
                 )
             )
         else:
@@ -105,9 +117,20 @@ def submit_quiz(
 
     graded = [r for r in results if r.correct is not None]
     correct_count = sum(1 for r in graded if r.correct)
+    graded_count = len(graded)
+
+    db.add(
+        QuizAttempt(
+            user_id=current_user.id,
+            quiz_id=quiz.id,
+            correct_count=correct_count,
+            graded_count=graded_count,
+        )
+    )
+    db.commit()
 
     return QuizSubmitResponse(
         results=results,
         correct_count=correct_count,
-        graded_count=len(graded),
+        graded_count=graded_count,
     )

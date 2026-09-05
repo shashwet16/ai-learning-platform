@@ -274,15 +274,15 @@ main {
   color: var(--ink-faint);
 }
 
-/* --- Home / dashboard --- */
+/* --- Dashboard --- */
 
-.home-page {
-  max-width: 720px;
+.dashboard-page {
+  max-width: 800px;
   margin: 0 auto;
-  padding: 72px 24px;
+  padding: 72px 24px 96px;
 }
 
-.home-page .kicker {
+.dashboard-page .kicker {
   display: block;
   font-size: 0.78rem;
   letter-spacing: 0.08em;
@@ -291,14 +291,87 @@ main {
   margin-bottom: 10px;
 }
 
-.home-page h1 {
+.dashboard-page h1 {
+  margin-bottom: 12px;
+}
+
+.dashboard-page__subtitle {
+  color: var(--ink-soft);
   margin-bottom: 32px;
 }
 
-.home-page__actions {
+.dashboard-page__actions {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-bottom: 48px;
+}
+
+.dashboard-course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-course-card {
+  display: block;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px 28px;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.dashboard-course-card:hover {
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+}
+
+.dashboard-course-card h2 {
+  margin-bottom: 8px;
+}
+
+.dashboard-course-card p {
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+.dashboard-course-card__quiz-scores {
+  margin-top: 12px;
+  font-size: 0.86rem;
+  color: var(--ink-faint);
+}
+
+/* --- Course progress (dashboard cards + course detail page) --- */
+
+.course-progress {
+  margin: 20px 0 8px;
+}
+
+.course-progress__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.course-progress__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 200ms ease;
+}
+
+.course-progress__label {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
 }
 
 /* --- Courses --- */
@@ -495,6 +568,13 @@ main {
   color: var(--accent);
 }
 
+.lesson-list__check {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
 /* --- Lesson viewer --- */
 
 .lesson-page {
@@ -686,6 +766,11 @@ main {
   margin: 0 0 20px;
 }
 
+.lesson-complete-btn {
+  display: inline-block;
+  margin: 0 0 20px 12px;
+}
+
 /* --- Quiz --- */
 
 .quiz-page {
@@ -759,6 +844,27 @@ main {
   gap: 10px;
   font-size: 0.96rem;
   cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.quiz-choice--correct {
+  background: var(--accent-soft-strong);
+}
+
+.quiz-choice--wrong {
+  background: var(--danger-soft);
+}
+
+.quiz-choice__tag {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--accent-hover);
+}
+
+.quiz-choice__tag--wrong {
+  color: var(--danger);
 }
 
 .quiz-question__textarea {

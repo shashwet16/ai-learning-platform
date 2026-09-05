@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { getLesson, type LessonDetail } from '../api/courses'
 import { getExerciseForLesson, type ExerciseRead } from '../api/exercises'
+import { completeLesson } from '../api/progress'
 import { getQuizForLesson } from '../api/quiz'
 import { MermaidDiagram } from '../components/MermaidDiagram'
 
@@ -61,6 +62,8 @@ export function LessonPage() {
   const [error, setError] = useState<string | null>(null)
   const [exercise, setExercise] = useState<ExerciseRead | null>(null)
   const [hasQuiz, setHasQuiz] = useState(false)
+  const [isCompleted, setIsCompleted] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   useEffect(() => {
     if (!lessonId) return
@@ -103,6 +106,31 @@ export function LessonPage() {
       .catch(() => undefined)
   }, [lessonId])
 
+  useEffect(() => {
+    // Reset on navigation, same as the states above. Deliberately not
+    // pre-fetched from the course's progress data: this page doesn't know
+    // its own course id, and re-marking an already-completed lesson is a
+    // harmless no-op server-side (M6.2), so the only real cost of skipping
+    // a "was this already done" check is the button briefly re-offering
+    // itself on a lesson you'd previously completed.
+    setIsCompleted(false)
+  }, [lessonId])
+
+  async function handleMarkComplete() {
+    if (!lessonId) return
+    setIsCompleting(true)
+    try {
+      await completeLesson(lessonId)
+      setIsCompleted(true)
+    } catch {
+      // Best-effort: progress tracking is supplementary, not required to
+      // keep reading, so a failed request just leaves the button clickable
+      // again rather than surfacing a blocking error over lesson content.
+    } finally {
+      setIsCompleting(false)
+    }
+  }
+
   if (error) {
     return <p className="form-error">{error}</p>
   }
@@ -135,6 +163,19 @@ export function LessonPage() {
           Take the quiz →
         </Link>
       )}
+
+      <button
+        type="button"
+        className="btn btn-quiet lesson-complete-btn"
+        onClick={handleMarkComplete}
+        disabled={isCompleting || isCompleted}
+      >
+        {isCompleted
+          ? '✓ Marked complete'
+          : isCompleting
+            ? 'Marking…'
+            : 'Mark lesson complete'}
+      </button>
 
       <nav className="lesson-nav">
         {lesson.prev_lesson_id ? (

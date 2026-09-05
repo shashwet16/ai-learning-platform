@@ -2,9 +2,11 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Choice, Lesson, Question, Quiz
+from app.models import Choice, Lesson, Question, Quiz, User
+from app.models.progress import QuizAttempt
 from app.services.llm.base import ChatMessage, LLMProvider
 
 
@@ -100,7 +102,7 @@ def test_get_quiz_404s_for_lesson_without_one(
 
 
 def test_submit_grades_correct_mcq_choice(
-    client: TestClient, db: Session, quiz: Quiz
+    client: TestClient, db: Session, quiz: Quiz, auth_headers: dict[str, str]
 ) -> None:
     question = _question_by_type(quiz, "mcq")
     right = next(c for c in question.choices if c.is_correct)
@@ -110,6 +112,7 @@ def test_submit_grades_correct_mcq_choice(
         json={
             "answers": [{"question_id": str(question.id), "choice_id": str(right.id)}]
         },
+        headers=auth_headers,
     )
     assert response.status_code == 200
 
@@ -120,8 +123,65 @@ def test_submit_grades_correct_mcq_choice(
     assert (body["correct_count"], body["graded_count"]) == (1, 1)
 
 
+def test_submit_reveals_the_correct_choice_for_mcq_questions(
+    client: TestClient, quiz: Quiz, auth_headers: dict[str, str]
+) -> None:
+    # The answer-key boundary is about not leaking it *before* an attempt
+    # (see test_get_quiz_never_leaks_the_answer_key above) — once
+    # submitted, the result is allowed to reveal it, including for a
+    # question the learner left unanswered or got wrong.
+    question = _question_by_type(quiz, "mcq")
+    right = next(c for c in question.choices if c.is_correct)
+    wrong = next(c for c in question.choices if not c.is_correct)
+
+    response = client.post(
+        f"/quizzes/{quiz.id}/submit",
+        json={
+            "answers": [{"question_id": str(question.id), "choice_id": str(wrong.id)}]
+        },
+        headers=auth_headers,
+    )
+    result = next(
+        r for r in response.json()["results"] if r["question_id"] == str(question.id)
+    )
+    assert result["correct"] is False
+    assert result["correct_choice_id"] == str(right.id)
+
+
+def test_submit_requires_auth(client: TestClient, quiz: Quiz) -> None:
+    # M6.2 revision: submitting now persists a QuizAttempt scoped to a
+    # user, so — unlike the GET above — this is no longer anonymous.
+    response = client.post(f"/quizzes/{quiz.id}/submit", json={"answers": []})
+    assert response.status_code == 401
+
+
+def test_submit_persists_a_quiz_attempt_for_the_current_user(
+    client: TestClient,
+    db: Session,
+    quiz: Quiz,
+    user: User,
+    auth_headers: dict[str, str],
+) -> None:
+    question = _question_by_type(quiz, "mcq")
+    right = next(c for c in question.choices if c.is_correct)
+
+    client.post(
+        f"/quizzes/{quiz.id}/submit",
+        json={
+            "answers": [{"question_id": str(question.id), "choice_id": str(right.id)}]
+        },
+        headers=auth_headers,
+    )
+
+    attempt = db.scalars(
+        select(QuizAttempt).where(QuizAttempt.quiz_id == quiz.id)
+    ).one()
+    assert attempt.user_id == user.id
+    assert (attempt.correct_count, attempt.graded_count) == (1, 1)
+
+
 def test_submit_grades_incorrect_mcq_choice(
-    client: TestClient, db: Session, quiz: Quiz
+    client: TestClient, db: Session, quiz: Quiz, auth_headers: dict[str, str]
 ) -> None:
     question = _question_by_type(quiz, "mcq")
     wrong = next(c for c in question.choices if not c.is_correct)
@@ -131,6 +191,7 @@ def test_submit_grades_incorrect_mcq_choice(
         json={
             "answers": [{"question_id": str(question.id), "choice_id": str(wrong.id)}]
         },
+        headers=auth_headers,
     )
     body = response.json()
     result = next(r for r in body["results"] if r["question_id"] == str(question.id))
@@ -139,12 +200,14 @@ def test_submit_grades_incorrect_mcq_choice(
 
 
 def test_unanswered_questions_are_ungraded_not_wrong(
-    client: TestClient, quiz: Quiz
+    client: TestClient, quiz: Quiz, auth_headers: dict[str, str]
 ) -> None:
     # An empty submission still returns a result row per question, but with
     # correct=None — and graded_count stays 0, so the score isn't diluted by
     # questions the learner never attempted.
-    response = client.post(f"/quizzes/{quiz.id}/submit", json={"answers": []})
+    response = client.post(
+        f"/quizzes/{quiz.id}/submit", json={"answers": []}, headers=auth_headers
+    )
     assert response.status_code == 200
 
     body = response.json()
@@ -154,7 +217,10 @@ def test_unanswered_questions_are_ungraded_not_wrong(
 
 
 def test_open_ended_answer_is_graded_by_the_llm_provider(
-    client: TestClient, quiz: Quiz, monkeypatch: pytest.MonkeyPatch
+    client: TestClient,
+    quiz: Quiz,
+    auth_headers: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # get_llm_provider is called directly by the route, not injected via
     # Depends, so it's patched where the route looks it up rather than
@@ -172,16 +238,21 @@ def test_open_ended_answer_is_graded_by_the_llm_provider(
                 {"question_id": str(question.id), "answer_text": "Because of X."}
             ]
         },
+        headers=auth_headers,
     )
     body = response.json()
     result = next(r for r in body["results"] if r["question_id"] == str(question.id))
     assert result["correct"] is True
     assert result["feedback"] == "Good explanation."
+    assert result["correct_choice_id"] is None
     assert (body["correct_count"], body["graded_count"]) == (1, 1)
 
 
 def test_blank_open_ended_answer_is_not_sent_to_the_provider(
-    client: TestClient, quiz: Quiz, monkeypatch: pytest.MonkeyPatch
+    client: TestClient,
+    quiz: Quiz,
+    auth_headers: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Whitespace-free empty text is falsy, so the route must skip grading
     # entirely rather than spend an API call on nothing.
@@ -194,6 +265,7 @@ def test_blank_open_ended_answer_is_not_sent_to_the_provider(
     response = client.post(
         f"/quizzes/{quiz.id}/submit",
         json={"answers": [{"question_id": str(question.id), "answer_text": ""}]},
+        headers=auth_headers,
     )
     assert response.status_code == 200
     result = next(
@@ -203,7 +275,10 @@ def test_blank_open_ended_answer_is_not_sent_to_the_provider(
 
 
 def test_mcq_only_submission_never_constructs_a_provider(
-    client: TestClient, quiz: Quiz, monkeypatch: pytest.MonkeyPatch
+    client: TestClient,
+    quiz: Quiz,
+    auth_headers: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # The lazy-construction promise in the route's own comment: a quiz
     # graded entirely from mcq answers must work with no LLM configured.
@@ -219,12 +294,17 @@ def test_mcq_only_submission_never_constructs_a_provider(
         json={
             "answers": [{"question_id": str(question.id), "choice_id": str(right.id)}]
         },
+        headers=auth_headers,
     )
     assert response.status_code == 200
     assert response.json()["correct_count"] == 1
 
 
-def test_submit_404s_for_unknown_quiz(client: TestClient) -> None:
-    response = client.post(f"/quizzes/{uuid.uuid4()}/submit", json={"answers": []})
+def test_submit_404s_for_unknown_quiz(
+    client: TestClient, auth_headers: dict[str, str]
+) -> None:
+    response = client.post(
+        f"/quizzes/{uuid.uuid4()}/submit", json={"answers": []}, headers=auth_headers
+    )
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "quiz_not_found"

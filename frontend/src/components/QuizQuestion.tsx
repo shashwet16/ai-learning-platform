@@ -43,19 +43,41 @@ export function QuizQuestion({
 
       {question.question_type === 'mcq' ? (
         <div className="quiz-question__choices">
-          {question.choices.map((choice) => (
-            <label key={choice.id} className="quiz-choice">
-              <input
-                type="radio"
-                name={question.id}
-                value={choice.id}
-                checked={choiceId === choice.id}
-                onChange={() => onChoiceChange(choice.id)}
-                disabled={disabled}
-              />
-              {choice.text}
-            </label>
-          ))}
+          {question.choices.map((choice) => {
+            // Only meaningful once `result` exists — correct_choice_id is
+            // never sent by the pre-submit fetch, so both are undefined/
+            // false until the learner actually submits.
+            const isCorrectChoice = result?.correct_choice_id === choice.id
+            const isYourWrongChoice =
+              result !== undefined && !isCorrectChoice && choiceId === choice.id
+            const choiceClass = isCorrectChoice
+              ? 'quiz-choice quiz-choice--correct'
+              : isYourWrongChoice
+                ? 'quiz-choice quiz-choice--wrong'
+                : 'quiz-choice'
+
+            return (
+              <label key={choice.id} className={choiceClass}>
+                <input
+                  type="radio"
+                  name={question.id}
+                  value={choice.id}
+                  checked={choiceId === choice.id}
+                  onChange={() => onChoiceChange(choice.id)}
+                  disabled={disabled}
+                />
+                {choice.text}
+                {isCorrectChoice && (
+                  <span className="quiz-choice__tag">Correct answer</span>
+                )}
+                {isYourWrongChoice && (
+                  <span className="quiz-choice__tag quiz-choice__tag--wrong">
+                    Your answer
+                  </span>
+                )}
+              </label>
+            )
+          })}
         </div>
       ) : (
         <textarea

@@ -58,6 +58,16 @@ class QuestionResult(BaseModel):
     correct: bool | None
     # LLM-written feedback, open_ended only (M5.5). Always None for mcq.
     feedback: str | None = None
+    # mcq only, always None for open_ended (no single "correct choice"
+    # concept there). Revealed here deliberately, unlike ChoiceRead/
+    # QuizRead above: this is the *result* of an attempt the learner has
+    # already submitted, not the question itself pre-attempt — the
+    # answer-key boundary QuizRead enforces is about not leaking it before
+    # a learner has committed an answer, not about never showing it at
+    # all. Populated for every mcq question in the response, including
+    # ones the learner left unanswered, since results are a final review
+    # view once submitted, not something to keep guessing at.
+    correct_choice_id: uuid.UUID | None = None
 
 
 class QuizSubmitResponse(BaseModel):
