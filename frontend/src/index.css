@@ -771,6 +771,71 @@ main {
   margin: 0 0 20px 12px;
 }
 
+.lesson-resources {
+  margin: 8px 0 28px;
+  padding: 20px 22px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.lesson-resources__heading {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+
+.lesson-resources__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson-resources__item + .lesson-resources__item {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.lesson-resources__link {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.lesson-resources__link:hover .lesson-resources__title {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.lesson-resources__badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.lesson-resources__title {
+  font-weight: 500;
+}
+
+.lesson-resources__description {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
 /* --- Quiz --- */
 
 .quiz-page {

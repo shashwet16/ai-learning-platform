@@ -12,6 +12,7 @@ from app.api.routes.courses import lessons_router
 from app.api.routes.courses import router as courses_router
 from app.api.routes.exercises import router as exercises_router
 from app.api.routes.quizzes import router as quizzes_router
+from app.api.routes.resources import router as resources_router
 from app.core.config import settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -41,6 +42,7 @@ app.include_router(courses_router)
 app.include_router(lessons_router)
 app.include_router(exercises_router)
 app.include_router(quizzes_router)
+app.include_router(resources_router)
 
 
 @app.middleware("http")

@@ -6,6 +6,8 @@ import { getLesson, type LessonDetail } from '../api/courses'
 import { getExerciseForLesson, type ExerciseRead } from '../api/exercises'
 import { completeLesson } from '../api/progress'
 import { getQuizForLesson } from '../api/quiz'
+import { getResourcesForLesson, type Resource } from '../api/resources'
+import { LessonResources } from '../components/LessonResources'
 import { MermaidDiagram } from '../components/MermaidDiagram'
 
 // Lazy, not a static import: CodePlayground pulls in CodeMirror + the
@@ -62,6 +64,7 @@ export function LessonPage() {
   const [error, setError] = useState<string | null>(null)
   const [exercise, setExercise] = useState<ExerciseRead | null>(null)
   const [hasQuiz, setHasQuiz] = useState(false)
+  const [resources, setResources] = useState<Resource[]>([])
   const [isCompleted, setIsCompleted] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
 
@@ -103,6 +106,19 @@ export function LessonPage() {
     setHasQuiz(false)
     getQuizForLesson(lessonId)
       .then(() => setHasQuiz(true))
+      .catch(() => undefined)
+  }, [lessonId])
+
+  useEffect(() => {
+    if (!lessonId) return
+    // Unlike the exercise/quiz fetches above, this endpoint never 404s —
+    // it always resolves to an array, empty for a lesson with nothing
+    // curated yet. LessonResources itself renders nothing for an empty
+    // list, so a failed fetch degrading to "no resources shown" is a
+    // reasonable, non-blocking fallback for this supplementary content.
+    setResources([])
+    getResourcesForLesson(lessonId)
+      .then(setResources)
       .catch(() => undefined)
   }, [lessonId])
 
@@ -163,6 +179,8 @@ export function LessonPage() {
           Take the quiz →
         </Link>
       )}
+
+      <LessonResources resources={resources} />
 
       <button
         type="button"
